@@ -7,6 +7,7 @@ interface LoginForm {
 }
 
 const EMAIL_REGEX = /^\S+@\S+\.\S+$/;
+const API_BASE = "https://take-home-test-api.nutech-integrasi.com";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const res = await fetch("https://take-home-test-api.nutech.intergrasi.com/login", {
+      const res = await fetch(`${API_BASE}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -44,25 +45,20 @@ export default function Login() {
         }),
       });
 
-      const data = await res.json().catch(() => ({} as Record<string, unknown>));
-      if (!res.ok) {
-        const msg = (data?.message as string) || (typeof data === "string" ? data : null) || "Username atau password salah.";
-        setApiError(msg);
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data?.data?.token) {
+        setApiError(data?.message || "Username atau password salah.");
         return;
       }
 
-      const token = data?.data?.token ?? data?.token ?? data?.access_token ?? null;
-      if (!token) {
-        setApiError("Login berhasil, tapi token tidak ditemukan di respons.");
-        return;
-      }
-
+      const { token, user } = data.data;
       localStorage.setItem("auth_token", token);
-      if (data?.data?.user) localStorage.setItem("auth_user", JSON.stringify(data.data.user));
+      if (user) localStorage.setItem("auth_user", JSON.stringify(user));
 
       navigate("/dashboard");
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Terjadi kesalahan jaringan. Coba beberapa saat lagi.";
+      const errorMessage = err instanceof Error ? err.message : "Tidak bisa menghubungi server. Periksa koneksi/jaringan.";
       setApiError(errorMessage);
     } finally {
       setLoading(false);
@@ -73,18 +69,18 @@ export default function Login() {
     <div className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="relative bg-gray-800/90 backdrop-blur-xl border border-gray-700 shadow-2xl rounded-3xl p-8 transition-all duration-500 hover:shadow-gray-900/50">
-          
+          {/* Header */}
           <div className="mb-8 text-center">
             <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-600 to-gray-800 rounded-2xl flex items-center justify-center shadow-lg border border-gray-600">
               <svg className="w-8 h-8 text-gray-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c.942 0 1.809.402 2.425 1.05A3.5 3.5 0 0118 15.5V17h-3m-6 0H6v-1.5A3.5 3.5 0 019.575 12.05 3.5 3.5 0 0112 11zm0 0a3 3 0 100-6 3 3 0 000 6z" />
               </svg>
             </div>
-
             <h1 className="text-3xl font-bold text-gray-100 mb-2">Masuk</h1>
             <p className="text-gray-300 text-sm">Kasirin POS — selamat datang</p>
           </div>
-     
+
+          {/* Error Alert */}
           {apiError && (
             <div role="alert" className="mb-6 rounded-xl border border-red-900/50 bg-red-900/20 px-4 py-3 text-sm text-red-300 backdrop-blur-sm">
               <div className="flex items-center">
@@ -100,8 +96,9 @@ export default function Login() {
             </div>
           )}
 
-          
+          {/* Form */}
           <form onSubmit={onSubmit} className="space-y-6" noValidate>
+            {/* Email */}
             <div className="space-y-2">
               <label htmlFor="email" className="block text-sm font-medium text-gray-200">
                 Email
@@ -120,6 +117,7 @@ export default function Login() {
               />
             </div>
 
+            {/* Password */}
             <div className="space-y-2">
               <label htmlFor="password" className="block text-sm font-medium text-gray-200">
                 Password
@@ -163,6 +161,7 @@ export default function Login() {
               <p className="text-xs text-gray-400">Minimal 6 karakter.</p>
             </div>
 
+            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
@@ -195,6 +194,7 @@ export default function Login() {
           </form>
         </div>
 
+        {/* Footer */}
         <div className="mt-6 text-center">
           <p className="text-gray-400 text-xs">
             Dengan masuk, Anda menyetujui{" "}

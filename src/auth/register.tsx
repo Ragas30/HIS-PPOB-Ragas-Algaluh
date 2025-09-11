@@ -1,27 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
-
-type MockLinkProps = {
-  to: string;
-  className?: string;
-  children: React.ReactNode;
-};
-const Link: React.FC<MockLinkProps> = ({ to, children, className }) => {
-  const navigate = useNavigate();
-  return (
-    <a
-      href={to}
-      className={className}
-      onClick={(e) => {
-        e.preventDefault();
-        navigate(to);
-      }}
-    >
-      {children}
-    </a>
-  );
-};
+import { Link, useNavigate } from "react-router-dom";
 
 type RegisterForm = {
   first_name: string;
@@ -31,8 +10,11 @@ type RegisterForm = {
 };
 
 const EMAIL_REGEX = /^\S+@\S+\.\S+$/;
+const API_BASE = "https://take-home-test-api.nutech-integrasi.com"; // <- domain yang benar
 
-const DarkElegantRegister: React.FC = () => {
+export default function Register() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState<RegisterForm>({
     first_name: "",
     last_name: "",
@@ -40,8 +22,8 @@ const DarkElegantRegister: React.FC = () => {
     password: "",
   });
 
-  const [showPwd, setShowPwd] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [showPwd, setShowPwd] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -63,7 +45,6 @@ const DarkElegantRegister: React.FC = () => {
     e.preventDefault();
     if (loading) return;
 
-    setApiError(null);
     const err = validate();
     if (err) {
       setApiError(err);
@@ -71,18 +52,57 @@ const DarkElegantRegister: React.FC = () => {
     }
 
     setLoading(true);
-    try {
-      // Simulasi panggilan API
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+    setApiError(null);
 
-      setToast("Registrasi berhasil! Silakan login.");
+    // Abort fetch kalau terlalu lama (10s)
+    const controller = new AbortController();
+    const t = setTimeout(() => controller.abort(), 10000);
+
+    try {
+      const res = await fetch(`${API_BASE}/registration`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
+        body: JSON.stringify({
+          first_name: formData.first_name.trim(),
+          last_name: formData.last_name.trim(),
+          email: formData.email.trim(),
+          password: formData.password,
+        }),
+      });
+
+      clearTimeout(t);
+
+      let data: { message?: string; error?: string } | string | null = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+
+      if (!res.ok) {
+        let msg: string | undefined = undefined;
+        if (typeof data === "object" && data !== null) {
+          msg = (data as { message?: string; error?: string }).message || (data as { message?: string; error?: string }).error;
+        } else if (typeof data === "string") {
+          msg = data;
+        }
+        msg = msg || "Registrasi gagal. Periksa kembali data Anda.";
+        setApiError(String(msg));
+        return;
+      }
+
+      // Sukses
+      setToast("Registrasi berhasil! Mengarahkan ke halaman login…");
       setTimeout(() => {
         setToast(null);
-        console.log("Navigate to /login");
-      }, 2000);
-    } catch {
-      setApiError("Terjadi kesalahan jaringan. Coba beberapa saat lagi.");
+        navigate("/login");
+      }, 1200);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? (error.name === "AbortError" ? "Permintaan waktu habis. Coba lagi." : error.message) : "Tidak bisa menghubungi server. Periksa koneksi Anda.";
+      setApiError(msg);
     } finally {
+      clearTimeout(t);
       setLoading(false);
     }
   };
@@ -98,7 +118,6 @@ const DarkElegantRegister: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
               </svg>
             </div>
-
             <h1 className="text-3xl font-bold text-gray-100 mb-2">Buat Akun</h1>
           </div>
 
@@ -280,6 +299,4 @@ const DarkElegantRegister: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default DarkElegantRegister;
+}

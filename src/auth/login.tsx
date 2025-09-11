@@ -1,10 +1,12 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 interface LoginForm {
   email: string;
   password: string;
 }
+
+const EMAIL_REGEX = /^\S+@\S+\.\S+$/;
 
 export default function Login() {
   const navigate = useNavigate();
@@ -21,7 +23,7 @@ export default function Login() {
   };
 
   const validate = () => {
-    if (!/^\S+@\S+\.\S+$/.test(form.email)) return "Format email tidak valid.";
+    if (!EMAIL_REGEX.test(form.email)) return "Format email tidak valid.";
     if (form.password.length < 6) return "Password minimal 6 karakter.";
     return null;
   };
@@ -42,30 +44,22 @@ export default function Login() {
         }),
       });
 
-      const data = await res.json().catch(() => ({}));
+      const data = await res.json().catch(() => ({} as Record<string, unknown>));
       if (!res.ok) {
-        const msg = (data?.message as string) || (typeof data === "string" ? data : null) || "Login gagal. Periksa email/password.";
+        const msg = (data?.message as string) || (typeof data === "string" ? data : null) || "Username atau password salah.";
         setApiError(msg);
         return;
       }
 
-      // Ambil token dari berbagai kemungkinan bentuk respons
       const token = data?.data?.token ?? data?.token ?? data?.access_token ?? null;
-
       if (!token) {
         setApiError("Login berhasil, tapi token tidak ditemukan di respons.");
         return;
       }
 
-      // Simpan token
       localStorage.setItem("auth_token", token);
+      if (data?.data?.user) localStorage.setItem("auth_user", JSON.stringify(data.data.user));
 
-      // OPTIONAL: simpan profile jika API memberi data user
-      if (data?.data?.user) {
-        localStorage.setItem("auth_user", JSON.stringify(data.data.user));
-      }
-
-      // Arahkan ke halaman utama / dashboard
       navigate("/dashboard");
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Terjadi kesalahan jaringan. Coba beberapa saat lagi.";
@@ -76,61 +70,142 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4">
+    <div className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <div className="relative bg-white/95 backdrop-blur rounded-2xl shadow-2xl p-6 sm:p-8">
-          <div className="mb-6 text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold shadow">K</div>
-            <h1 className="mt-3 text-2xl font-bold text-slate-800">Masuk</h1>
-            <p className="text-slate-500 text-sm">Kasirin POS — selamat datang</p>
-          </div>
-
-          {apiError && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{apiError}</div>}
-
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700">
-                Email
-              </label>
-              <input id="email" name="email" type="email" value={form.email} onChange={onChange} autoComplete="email" className="mt-1 block w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500" required />
+        <div className="relative bg-gray-800/90 backdrop-blur-xl border border-gray-700 shadow-2xl rounded-3xl p-8 transition-all duration-500 hover:shadow-gray-900/50">
+          
+          <div className="mb-8 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-600 to-gray-800 rounded-2xl flex items-center justify-center shadow-lg border border-gray-600">
+              <svg className="w-8 h-8 text-gray-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c.942 0 1.809.402 2.425 1.05A3.5 3.5 0 0118 15.5V17h-3m-6 0H6v-1.5A3.5 3.5 0 019.575 12.05 3.5 3.5 0 0112 11zm0 0a3 3 0 100-6 3 3 0 000 6z" />
+              </svg>
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+            <h1 className="text-3xl font-bold text-gray-100 mb-2">Masuk</h1>
+            <p className="text-gray-300 text-sm">Kasirin POS — selamat datang</p>
+          </div>
+     
+          {apiError && (
+            <div role="alert" className="mb-6 rounded-xl border border-red-900/50 bg-red-900/20 px-4 py-3 text-sm text-red-300 backdrop-blur-sm">
+              <div className="flex items-center">
+                <svg className="w-5 h-5 mr-2 text-red-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                {apiError}
+              </div>
+            </div>
+          )}
+
+          
+          <form onSubmit={onSubmit} className="space-y-6" noValidate>
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-200">
+                Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={onChange}
+                autoComplete="email"
+                inputMode="email"
+                placeholder="nama@email.com"
+                className="w-full px-4 py-3 rounded-xl border bg-gray-700/50 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-gray-500 focus:ring-2 focus:ring-gray-500/20 focus:outline-none transition-all duration-300 hover:border-gray-500/70"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-200">
                 Password
               </label>
-              <div className="mt-1 relative">
+              <div className="relative">
                 <input
                   id="password"
                   name="password"
                   type={showPwd ? "text" : "password"}
                   value={form.password}
                   onChange={onChange}
-                  className="block w-full rounded-lg border-slate-300 pr-12 focus:border-indigo-500 focus:ring-indigo-500"
+                  autoComplete="current-password"
+                  placeholder="Minimal 6 karakter"
+                  className="w-full px-4 py-3 pr-12 rounded-xl border bg-gray-700/50 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-gray-500 focus:ring-2 focus:ring-gray-500/20 focus:outline-none transition-all duration-300 hover:border-gray-500/70"
                   required
                 />
-                <button type="button" onClick={() => setShowPwd((s) => !s)} className="absolute inset-y-0 right-0 px-3 text-slate-500 hover:text-slate-700">
-                  {showPwd ? "Hide" : "Show"}
+                <button
+                  type="button"
+                  onClick={() => setShowPwd((s) => !s)}
+                  aria-label={showPwd ? "Sembunyikan password" : "Tampilkan password"}
+                  aria-pressed={showPwd}
+                  className="absolute inset-y-0 right-0 px-4 text-gray-400 hover:text-gray-200 transition-colors duration-200 focus:outline-none"
+                >
+                  {showPwd ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
+                      />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
                 </button>
               </div>
-              <p className="mt-1 text-xs text-slate-500">Minimal 6 karakter.</p>
+              <p className="text-xs text-gray-400">Minimal 6 karakter.</p>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-white font-medium shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60"
+              className="w-full px-6 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white font-medium shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-gray-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:hover:scale-100"
             >
-              {loading ? "Memproses..." : "Masuk"}
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Memproses...
+                </span>
+              ) : (
+                <span className="flex items-center justify-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Masuk
+                </span>
+              )}
             </button>
 
-            <p className="text-center text-sm text-slate-600">
+            <p className="text-center text-sm text-gray-300">
               Belum punya akun?{" "}
-              <Link to="/register" className="text-indigo-600 hover:underline">
+              <Link to="/register" className="text-gray-100 hover:text-white hover:underline font-semibold transition-all duration-200">
                 Daftar
               </Link>
             </p>
           </form>
+        </div>
+
+        <div className="mt-6 text-center">
+          <p className="text-gray-400 text-xs">
+            Dengan masuk, Anda menyetujui{" "}
+            <a href="#" className="text-gray-300 hover:text-white underline transition-colors duration-200">
+              syarat dan ketentuan
+            </a>{" "}
+            serta{" "}
+            <a href="#" className="text-gray-300 hover:text-white underline transition-colors duration-200">
+              kebijakan privasi
+            </a>
+          </p>
         </div>
       </div>
     </div>

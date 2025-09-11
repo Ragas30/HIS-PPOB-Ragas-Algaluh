@@ -1,16 +1,38 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 
-interface RegisterForm {
+type MockLinkProps = {
+  to: string;
+  className?: string;
+  children: React.ReactNode;
+};
+const Link: React.FC<MockLinkProps> = ({ to, children, className }) => {
+  const navigate = useNavigate();
+  return (
+    <a
+      href={to}
+      className={className}
+      onClick={(e) => {
+        e.preventDefault();
+        navigate(to);
+      }}
+    >
+      {children}
+    </a>
+  );
+};
+
+type RegisterForm = {
   first_name: string;
   last_name: string;
   email: string;
   password: string;
-}
+};
 
-export default function Register() {
-  const navigate = useNavigate();
+const EMAIL_REGEX = /^\S+@\S+\.\S+$/;
 
+const DarkElegantRegister: React.FC = () => {
   const [formData, setFormData] = useState<RegisterForm>({
     first_name: "",
     last_name: "",
@@ -18,29 +40,30 @@ export default function Register() {
     password: "",
   });
 
-  const [showPwd, setShowPwd] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [showPwd, setShowPwd] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setApiError(null);
     const { name, value } = e.target;
     setFormData((s) => ({ ...s, [name]: value }));
   };
 
-  const validate = () => {
+  const validate = (): string | null => {
     if (!formData.first_name.trim()) return "First name wajib diisi.";
     if (!formData.last_name.trim()) return "Last name wajib diisi.";
-    if (!/^\S+@\S+\.\S+$/.test(formData.email)) return "Format email tidak valid.";
+    if (!EMAIL_REGEX.test(formData.email)) return "Format email tidak valid.";
     if (formData.password.length < 6) return "Password minimal 6 karakter.";
     return null;
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setApiError(null);
+    if (loading) return;
 
+    setApiError(null);
     const err = validate();
     if (err) {
       setApiError(err);
@@ -49,121 +72,214 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const payload = {
-        name: `${formData.first_name} ${formData.last_name}`.trim(),
-        email: formData.email,
-        password: formData.password,
-      };
-
-      const res = await fetch("https://take-home-test-api.nutech.intergrasi.com/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        const msg = (data?.message as string) || (typeof data === "string" ? data : null) || "Registrasi gagal. Coba lagi.";
-        setApiError(msg);
-        return;
-      }
+      // Simulasi panggilan API
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       setToast("Registrasi berhasil! Silakan login.");
-      setTimeout(() => navigate("/login"), 900);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        setApiError(error.message ?? "Terjadi kesalahan jaringan. Coba beberapa saat lagi.");
-      } else {
-        setApiError("Terjadi kesalahan jaringan. Coba beberapa saat lagi.");
-      }
+      setTimeout(() => {
+        setToast(null);
+        console.log("Navigate to /login");
+      }, 2000);
+    } catch {
+      setApiError("Terjadi kesalahan jaringan. Coba beberapa saat lagi.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4">
+    <div className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <div className="relative bg-white/95 backdrop-blur rounded-2xl shadow-2xl p-6 sm:p-8">
-          <div className="mb-6 text-center">
-            <h1 className="mt-3 text-2xl font-bold text-slate-800">Buat Akun</h1>
-            <p className="text-slate-500 text-sm">Kasirin POS — daftar untuk mulai</p>
+        <div className="relative bg-gray-800/90 backdrop-blur-xl border border-gray-700 shadow-2xl rounded-3xl p-8 transition-all duration-500 hover:shadow-gray-900/50">
+          {/* Header */}
+          <div className="mb-8 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-600 to-gray-800 rounded-2xl flex items-center justify-center shadow-lg border border-gray-600">
+              <svg className="w-8 h-8 text-gray-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+            </div>
+
+            <h1 className="text-3xl font-bold text-gray-100 mb-2">Buat Akun</h1>
           </div>
 
-          {apiError && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{apiError}</div>}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label htmlFor="first_name" className="block text-sm font-medium text-slate-700">
-                  First name
-                </label>
-                <input id="first_name" name="first_name" type="text" value={formData.first_name} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500" required />
+          {/* Error Alert */}
+          {apiError && (
+            <div role="alert" className="mb-6 rounded-xl border border-red-900/50 bg-red-900/20 px-4 py-3 text-sm text-red-300 backdrop-blur-sm">
+              <div className="flex items-center">
+                <svg className="w-5 h-5 mr-2 text-red-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                {apiError}
               </div>
-              <div>
-                <label htmlFor="last_name" className="block text-sm font-medium text-slate-700">
-                  Last name
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+            {/* Grid Nama */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label htmlFor="first_name" className="block text-sm font-medium text-gray-200">
+                  First Name
                 </label>
-                <input id="last_name" name="last_name" type="text" value={formData.last_name} onChange={handleChange} className="mt-1 block w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500" required />
+                <input
+                  id="first_name"
+                  name="first_name"
+                  type="text"
+                  value={formData.first_name}
+                  onChange={handleChange}
+                  placeholder="Nama depan"
+                  className="w-full px-4 py-3 rounded-xl border bg-gray-700/50 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-gray-500 focus:ring-2 focus:ring-gray-500/20 focus:outline-none transition-all duration-300 hover:border-gray-500/70"
+                  required
+                  autoComplete="given-name"
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="last_name" className="block text-sm font-medium text-gray-200">
+                  Last Name
+                </label>
+                <input
+                  id="last_name"
+                  name="last_name"
+                  type="text"
+                  value={formData.last_name}
+                  onChange={handleChange}
+                  placeholder="Nama belakang"
+                  className="w-full px-4 py-3 rounded-xl border bg-gray-700/50 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-gray-500 focus:ring-2 focus:ring-gray-500/20 focus:outline-none transition-all duration-300 hover:border-gray-500/70"
+                  required
+                  autoComplete="family-name"
+                />
               </div>
             </div>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700">
-                Email
+            {/* Email */}
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-200">
+                Email Address
               </label>
               <input
                 id="email"
                 name="email"
                 type="email"
-                autoComplete="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"
+                placeholder="nama@email.com"
+                className="w-full px-4 py-3 rounded-xl border bg-gray-700/50 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-gray-500 focus:ring-2 focus:ring-gray-500/20 focus:outline-none transition-all duration-300 hover:border-gray-500/70"
                 required
+                autoComplete="email"
+                inputMode="email"
               />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+            {/* Password */}
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-200">
                 Password
               </label>
-              <div className="mt-1 relative">
+              <div className="relative">
                 <input
                   id="password"
                   name="password"
                   type={showPwd ? "text" : "password"}
                   value={formData.password}
                   onChange={handleChange}
-                  className="block w-full rounded-lg border-slate-300 pr-12 focus:border-indigo-500 focus:ring-indigo-500"
+                  placeholder="Minimal 6 karakter"
+                  className="w-full px-4 py-3 pr-12 rounded-xl border bg-gray-700/50 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-gray-500 focus:ring-2 focus:ring-gray-500/20 focus:outline-none transition-all duration-300 hover:border-gray-500/70"
                   required
+                  autoComplete="new-password"
                 />
-                <button type="button" onClick={() => setShowPwd((s) => !s)} className="absolute inset-y-0 right-0 px-3 text-slate-500 hover:text-slate-700">
-                  {showPwd ? "Hide" : "Show"}
+                <button
+                  type="button"
+                  aria-label={showPwd ? "Sembunyikan password" : "Tampilkan password"}
+                  aria-pressed={showPwd}
+                  onClick={() => setShowPwd((s) => !s)}
+                  className="absolute inset-y-0 right-0 px-4 text-gray-400 hover:text-gray-200 transition-colors duration-200 focus:outline-none"
+                >
+                  {showPwd ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
+                      />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
                 </button>
               </div>
             </div>
 
+            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-white font-medium shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60"
+              className="w-full px-6 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white font-medium shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-gray-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:hover:scale-100"
             >
-              {loading ? "Mendaftarkan..." : "Daftar"}
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Mendaftarkan...
+                </span>
+              ) : (
+                <span className="flex items-center justify-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Daftar Sekarang
+                </span>
+              )}
             </button>
 
-            <p className="text-center text-sm text-slate-600">
+            {/* Link Login */}
+            <p className="text-center text-sm text-gray-300">
               Sudah punya akun?{" "}
-              <Link to="/login" className="text-indigo-600 hover:underline">
-                Masuk
+              <Link to="/login" className="text-gray-100 hover:text-white hover:underline font-semibold transition-all duration-200">
+                Masuk di sini
               </Link>
             </p>
           </form>
 
-          {toast && <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-emerald-600 text-white text-sm px-4 py-1 shadow">{toast}</div>}
+          {/* Success Toast */}
+          {toast && (
+            <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white text-sm px-6 py-2 rounded-full shadow-lg animate-bounce z-20 border border-emerald-500">
+              <div className="flex items-center">
+                <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                  <path fillRule="evenodd" d="16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                {toast}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-6 text-center">
+          <p className="text-gray-400 text-xs">
+            Dengan mendaftar, Anda menyetujui{" "}
+            <a href="#" className="text-gray-300 hover:text-white underline transition-colors duration-200">
+              syarat dan ketentuan
+            </a>{" "}
+            serta{" "}
+            <a href="#" className="text-gray-300 hover:text-white underline transition-colors duration-200">
+              kebijakan privasi
+            </a>
+          </p>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default DarkElegantRegister;

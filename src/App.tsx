@@ -4,6 +4,7 @@ import Register from "./auth/register";
 import Dashboard from "./pages/dashboard";
 import { getToken } from "./auth/auth";
 import AppLayout from "./layout/applayout";
+import TopUp from "./pages/topup";
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const token = getToken();
@@ -29,6 +30,9 @@ export default function App() {
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
+
+        <Route index element={<Navigate to="/topUp" replace />} />
+        <Route path="topUp" element={<TopUp />} />
       </Route>
 
       {/* Fallback */}

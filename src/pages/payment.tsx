@@ -79,7 +79,7 @@ export default function Payment() {
     const timeoutId = setTimeout(() => controller.abort(), 10000);
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
 
-    const endpoints = [`${API_BASE}/service`, `${API_BASE}/services`];
+    const endpoints = [`${API_BASE}/services`];
     let loaded = false;
 
     try {

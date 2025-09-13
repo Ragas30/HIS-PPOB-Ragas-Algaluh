@@ -5,6 +5,9 @@ import Dashboard from "./pages/dashboard";
 import { getToken } from "./auth/auth";
 import AppLayout from "./layout/applayout";
 import TopUp from "./pages/topup";
+import Payment from "./pages/payment";
+import History from "./pages/history";
+import EditProfile from "./pages/editprofile";
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const token = getToken();
@@ -33,6 +36,15 @@ export default function App() {
 
         <Route index element={<Navigate to="/topUp" replace />} />
         <Route path="topUp" element={<TopUp />} />
+
+        <Route index element={<Navigate to="/payment" replace />} />
+        <Route path="payment" element={<Payment />} />
+
+        <Route index element={<Navigate to="/history" replace />} />
+        <Route path="history" element={<History />} />
+
+        <Route index element={<Navigate to="/profile" replace />} />
+        <Route path="profile" element={<EditProfile />} />
       </Route>
 
       {/* Fallback */}

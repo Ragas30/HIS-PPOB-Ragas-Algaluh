@@ -8,7 +8,7 @@ const AppLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-gray-100">
-      {/* Drawer Mobile Sidebar */}
+  
       <div className={`fixed inset-0 z-40 md:hidden ${mobileOpen ? "block" : "hidden"}`} aria-hidden={!mobileOpen}>
         <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
         <div className="absolute left-0 top-0 h-full w-72">

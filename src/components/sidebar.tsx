@@ -23,8 +23,8 @@ const menu: MenuItem[] = [
     ),
   },
   {
-    label: "Settings",
-    to: "/settings",
+    label: "Profile Settings",
+    to: "/profile",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         <path
@@ -93,9 +93,9 @@ const Sidebar: React.FC<Props> = ({ collapsed = false, onToggle, hideMobileHambu
       <div className="h-16 flex items-center justify-between px-4 border-b border-gray-800">
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-gray-600 to-gray-800 border border-gray-700 flex items-center justify-center text-gray-100 font-semibold shadow">K</div>
-          <span className={`text-gray-100 font-bold tracking-wide ${isCollapsed ? "hidden" : "inline"}`}>Kasirin POS</span>
+          <span className={`text-gray-100 font-bold tracking-wide ${isCollapsed ? "hidden" : "inline"}`}>R30 POS</span>
         </div>
-        <button onClick={toggleCollapse} className="hidden md:inline-flex text-gray-400 hover:text-gray-200 p-2 rounded-lg hover:bg-gray-800" aria-label="Toggle sidebar">
+        <button onClick={toggleCollapse} className="hidden md:inline-flex text-gray-400 hover:text-gray-200 p-2 rounded-lg" aria-label="Toggle sidebar">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {isCollapsed ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />}
           </svg>
@@ -122,7 +122,7 @@ const Sidebar: React.FC<Props> = ({ collapsed = false, onToggle, hideMobileHambu
       </nav>
 
       {/* Footer small text */}
-      <div className={`mt-auto p-3 text-xs text-gray-500 border-t border-gray-800 ${isCollapsed ? "hidden" : "block"}`}>© {new Date().getFullYear()} Kasirin</div>
+      <div className={`mt-auto p-3 text-xs text-gray-500 border-t border-gray-800 ${isCollapsed ? "hidden" : "block"}`}>© {new Date().getFullYear()} R30</div>
     </>
   );
 
@@ -162,7 +162,7 @@ const Sidebar: React.FC<Props> = ({ collapsed = false, onToggle, hideMobileHambu
           <div className="h-16 flex items-center justify-between px-4 border-b border-gray-800">
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-gray-600 to-gray-800 border border-gray-700 flex items-center justify-center text-gray-100 font-semibold shadow">K</div>
-              <span className="text-gray-100 font-bold tracking-wide">Kasirin POS</span>
+              <span className="text-gray-100 font-bold tracking-wide">R30</span>
             </div>
             <button onClick={() => setMobileOpen(false)} className="text-gray-400 hover:text-gray-200 p-2 rounded-lg hover:bg-gray-800" aria-label="Close sidebar">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,7 +190,7 @@ const Sidebar: React.FC<Props> = ({ collapsed = false, onToggle, hideMobileHambu
             ))}
           </nav>
 
-          <div className="mt-auto p-3 text-xs text-gray-500 border-t border-gray-800">© {new Date().getFullYear()} Kasirin</div>
+          <div className="mt-auto p-3 text-xs text-gray-500 border-t border-gray-800">© {new Date().getFullYear()} R30</div>
         </div>
       </div>
     </>

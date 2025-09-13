@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import Profile from "../components/profile";
 import StatCard from "../components/statcard";
+import Toast from "../components/toast";
 
 const API_BASE = "https://take-home-test-api.nutech-integrasi.com";
 
@@ -13,8 +14,17 @@ const formatIDR = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n);
 
+type TopUpResponse = {
+  message?: string;
+  data?: {
+    balance?: number;
+    [k: string]: unknown;
+  };
+  [k: string]: unknown;
+};
+
 export default function TopUp() {
-  const [amount, setAmount] = useState<string>(""); // simpan sebagai string untuk input
+  const [amount, setAmount] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -33,7 +43,6 @@ export default function TopUp() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setApiError(null);
-    // Hanya angka, tanpa spasi/titik/koma
     const digitsOnly = e.target.value.replace(/[^\d]/g, "");
     setAmount(digitsOnly);
   };
@@ -70,28 +79,27 @@ export default function TopUp() {
         body: JSON.stringify({ top_up_amount: parsedAmount }),
       });
 
-      const item = await res.json().catch(() => ({}));
-
-      localStorage.setItem("balance", JSON.stringify(item.data.balance));
+      
+      const data: TopUpResponse = await res.json().catch(() => ({} as TopUpResponse));
 
       clearTimeout(t);
 
-      let data: any = null;
-      try {
-        data = await res.json();
-      } catch {
-        data = null;
-      }
-
       if (!res.ok) {
-        const msg = data?.message || data?.error || (typeof data === "string" ? data : null) || "Top up gagal. Coba beberapa saat lagi.";
+        const msg = data?.message || (typeof data === "string" ? data : null) || "Top up gagal. Coba beberapa saat lagi.";
         setApiError(String(msg));
         return;
       }
 
-      setToast(`Top up berhasil: ${formatIDR(parsedAmount)} 🎉`);
-      setAmount("");
+      
+      if (data?.data?.balance != null) {
+        localStorage.setItem("balance", String(data.data.balance));
+      }
 
+      
+      window.dispatchEvent(new CustomEvent("balance:refresh"));
+
+      setToast(`Top up berhasil: ${formatIDR(parsedAmount)} `);
+      setAmount("");
       setTimeout(() => setToast(null), 2000);
     } catch (err: unknown) {
       const msg = err instanceof Error ? (err.name === "AbortError" ? "Permintaan waktu habis. Coba lagi." : err.message) : "Tidak bisa menghubungi server. Periksa koneksi Anda.";
@@ -104,14 +112,11 @@ export default function TopUp() {
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-4">
-          <Profile />
-        </div>
+      <Profile />
 
-        <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-4">
-          <StatCard title="Top Up Saldo" value={amount ? formatIDR(parsedAmount) : "Rp 0"} desc="Isi jumlah lalu tekan Top Up" />
-        </div>
+      
+      <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-4">
+        <StatCard title="Top Up Saldo" value={amount ? formatIDR(parsedAmount) : "Rp 0"} desc="Isi jumlah lalu tekan Top Up" />
       </div>
 
       <div className="bg-gray-800/70 border border-gray-700 rounded-2xl p-4 sm:p-6">
@@ -175,7 +180,7 @@ export default function TopUp() {
           </div>
         </form>
 
-        {toast && <div className="mt-4 rounded-xl border border-emerald-800/50 bg-emerald-900/20 px-4 py-3 text-sm text-emerald-300">{toast}</div>}
+        {toast && <Toast message={toast} onClose={() => setToast(null)} />}
       </div>
     </div>
   );

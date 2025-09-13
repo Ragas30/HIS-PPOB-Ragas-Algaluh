@@ -70,13 +70,18 @@ export default function Login() {
       <div className="w-full max-w-md">
         <div className="relative bg-gray-800/90 backdrop-blur-xl border border-gray-700 shadow-2xl rounded-3xl p-8 transition-all duration-500 hover:shadow-gray-900/50">
           <div className="mb-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-600 to-gray-800 rounded-2xl flex items-center justify-center shadow-lg border border-gray-600">
-              <svg className="w-8 h-8 text-gray-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c.942 0 1.809.402 2.425 1.05A3.5 3.5 0 0118 15.5V17h-3m-6 0H6v-1.5A3.5 3.5 0 019.575 12.05 3.5 3.5 0 0112 11zm0 0a3 3 0 100-6 3 3 0 000 6z" />
+            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl flex items-center justify-center shadow-lg border border-blue-600/20">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                />
               </svg>
             </div>
             <h1 className="text-3xl font-bold text-gray-100 mb-2">Masuk</h1>
-            <p className="text-gray-300 text-sm">Kasirin POS — selamat datang</p>
+            <p className="text-gray-300 text-sm">Selamat datang kembali</p>
           </div>
 
           {apiError && (
@@ -94,9 +99,7 @@ export default function Login() {
             </div>
           )}
 
-
           <form onSubmit={onSubmit} className="space-y-6" noValidate>
-
             <div className="space-y-2">
               <label htmlFor="email" className="block text-sm font-medium text-gray-200">
                 Email
@@ -161,7 +164,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-6 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white font-medium shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-gray-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:hover:scale-100"
+              className="w-full px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 border border-blue-600/20 text-white font-medium shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:hover:scale-100"
             >
               {loading ? (
                 <span className="flex items-center justify-center">
@@ -174,7 +177,7 @@ export default function Login() {
               ) : (
                 <span className="flex items-center justify-center">
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                   </svg>
                   Masuk
                 </span>
@@ -183,7 +186,7 @@ export default function Login() {
 
             <p className="text-center text-sm text-gray-300">
               Belum punya akun?{" "}
-              <Link to="/register" className="text-gray-100 hover:text-white hover:underline font-semibold transition-all duration-200">
+              <Link to="/register" className="text-blue-400 hover:text-blue-300 hover:underline font-semibold transition-all duration-200">
                 Daftar
               </Link>
             </p>

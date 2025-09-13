@@ -10,7 +10,7 @@ type RegisterForm = {
 };
 
 const EMAIL_REGEX = /^\S+@\S+\.\S+$/;
-const API_BASE = "https://take-home-test-api.nutech-integrasi.com"; // <- domain yang benar
+const API_BASE = "https://take-home-test-api.nutech-integrasi.com";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -54,7 +54,6 @@ export default function Register() {
     setLoading(true);
     setApiError(null);
 
-    // Abort fetch kalau terlalu lama (10s)
     const controller = new AbortController();
     const t = setTimeout(() => controller.abort(), 10000);
 
@@ -111,7 +110,6 @@ export default function Register() {
     <div className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="relative bg-gray-800/90 backdrop-blur-xl border border-gray-700 shadow-2xl rounded-3xl p-8 transition-all duration-500 hover:shadow-gray-900/50">
-          {/* Header */}
           <div className="mb-8 text-center">
             <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-600 to-gray-800 rounded-2xl flex items-center justify-center shadow-lg border border-gray-600">
               <svg className="w-8 h-8 text-gray-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -121,7 +119,6 @@ export default function Register() {
             <h1 className="text-3xl font-bold text-gray-100 mb-2">Buat Akun</h1>
           </div>
 
-          {/* Error Alert */}
           {apiError && (
             <div role="alert" className="mb-6 rounded-xl border border-red-900/50 bg-red-900/20 px-4 py-3 text-sm text-red-300 backdrop-blur-sm">
               <div className="flex items-center">
@@ -137,9 +134,7 @@ export default function Register() {
             </div>
           )}
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-            {/* Grid Nama */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label htmlFor="first_name" className="block text-sm font-medium text-gray-200">
@@ -175,7 +170,6 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Email */}
             <div className="space-y-2">
               <label htmlFor="email" className="block text-sm font-medium text-gray-200">
                 Email Address
@@ -194,7 +188,6 @@ export default function Register() {
               />
             </div>
 
-            {/* Password */}
             <div className="space-y-2">
               <label htmlFor="password" className="block text-sm font-medium text-gray-200">
                 Password
@@ -237,7 +230,6 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
@@ -261,7 +253,6 @@ export default function Register() {
               )}
             </button>
 
-            {/* Link Login */}
             <p className="text-center text-sm text-gray-300">
               Sudah punya akun?{" "}
               <Link to="/login" className="text-gray-100 hover:text-white hover:underline font-semibold transition-all duration-200">
@@ -270,7 +261,6 @@ export default function Register() {
             </p>
           </form>
 
-          {/* Success Toast */}
           {toast && (
             <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white text-sm px-6 py-2 rounded-full shadow-lg animate-bounce z-20 border border-emerald-500">
               <div className="flex items-center">
@@ -283,7 +273,7 @@ export default function Register() {
           )}
         </div>
 
-        {/* Footer */}
+        
         <div className="mt-6 text-center">
           <p className="text-gray-400 text-xs">
             Dengan mendaftar, Anda menyetujui{" "}

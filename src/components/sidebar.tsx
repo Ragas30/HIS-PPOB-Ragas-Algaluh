@@ -42,7 +42,6 @@ const menu: MenuItem[] = [
 type Props = {
   collapsed?: boolean;
   onToggle?: () => void;
-  /** sembunyikan tombol hamburger bawaan (kalau kamu sudah punya di Topbar) */
   hideMobileHamburger?: boolean;
 };
 
@@ -52,7 +51,6 @@ const Sidebar: React.FC<Props> = ({ collapsed = false, onToggle, hideMobileHambu
   const location = useLocation();
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  // restore collapsed state (desktop)
   useEffect(() => {
     const saved = localStorage.getItem("sidebar_collapsed");
     if (saved != null) setIsCollapsed(saved === "true");
@@ -65,13 +63,10 @@ const Sidebar: React.FC<Props> = ({ collapsed = false, onToggle, hideMobileHambu
     onToggle?.();
   };
 
-  // Close drawer ketika route berubah (mobile)
   useEffect(() => {
     if (mobileOpen) setMobileOpen(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
-  // Escape untuk drawer (mobile)
   useEffect(() => {
     if (!mobileOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -81,7 +76,6 @@ const Sidebar: React.FC<Props> = ({ collapsed = false, onToggle, hideMobileHambu
     return () => window.removeEventListener("keydown", onKey);
   }, [mobileOpen]);
 
-  // focus trap minimal (mobile)
   useEffect(() => {
     if (!mobileOpen) return;
     dialogRef.current?.focus();
@@ -89,20 +83,18 @@ const Sidebar: React.FC<Props> = ({ collapsed = false, onToggle, hideMobileHambu
 
   const SidebarBody = (
     <>
-      {/* Brand / Toggle */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-gray-800">
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-gray-600 to-gray-800 border border-gray-700 flex items-center justify-center text-gray-100 font-semibold shadow">K</div>
           <span className={`text-gray-100 font-bold tracking-wide ${isCollapsed ? "hidden" : "inline"}`}>R30 POS</span>
         </div>
-        <button onClick={toggleCollapse} className="hidden md:inline-flex text-gray-400 hover:text-gray-200 p-2 rounded-lg" aria-label="Toggle sidebar">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button onClick={toggleCollapse} className="hidden md:inline-flex text-gray-400 hover:text-gray-200 p-2 rounded-lg" aria-label="Toggle sidebar" title="Toggle sidebar">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             {isCollapsed ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />}
           </svg>
         </button>
       </div>
 
-      {/* Menu */}
       <nav className="p-3 space-y-1">
         {menu.map((item) => (
           <NavLink
@@ -121,57 +113,56 @@ const Sidebar: React.FC<Props> = ({ collapsed = false, onToggle, hideMobileHambu
         ))}
       </nav>
 
-      {/* Footer small text */}
       <div className={`mt-auto p-3 text-xs text-gray-500 border-t border-gray-800 ${isCollapsed ? "hidden" : "block"}`}>© {new Date().getFullYear()} R30</div>
     </>
   );
 
   return (
     <>
-      {/* MOBILE: hamburger floating button */}
       {!hideMobileHamburger && (
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="md:hidden fixed top-3 left-3 z-40 p-2 rounded-xl bg-gray-900/80 border border-gray-800 text-gray-200 shadow-lg backdrop-blur hover:bg-gray-800/80"
+          className="md:hidden fixed top-[max(theme(spacing.3),env(safe-area-inset-top))] left-[max(theme(spacing.3),env(safe-area-inset-left))] z-[9999] p-2 rounded-xl bg-gray-900/80 border border-gray-800 text-gray-200 shadow-lg backdrop-blur hover:bg-gray-800/80"
           aria-label="Open sidebar"
+          title="Open sidebar"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
       )}
 
-      {/* DESKTOP SIDEBAR */}
       <aside className={`${isCollapsed ? "w-20" : "w-64"} h-screen sticky top-0 bg-gray-900/80 backdrop-blur-xl border-r border-gray-800 transition-all duration-300 hidden md:flex flex-col`}>{SidebarBody}</aside>
 
-      {/* MOBILE DRAWER */}
-      <div className={`${mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"} md:hidden fixed inset-0 z-50 transition-opacity`}>
-        {/* overlay */}
+      <div className={`${mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"} md:hidden fixed inset-0 z-[9998] transition-opacity`} aria-hidden={!mobileOpen}>
         <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
 
-        {/* panel */}
         <div
           ref={dialogRef}
           role="dialog"
           aria-modal="true"
           tabIndex={-1}
-          className={`${mobileOpen ? "translate-x-0" : "-translate-x-full"} absolute left-0 top-0 h-full w-72 bg-gray-900/95 backdrop-blur-xl border-r border-gray-800 shadow-2xl transition-transform duration-300 focus:outline-none`}
+          className={`${
+            mobileOpen ? "translate-x-0" : "-translate-x-full"
+          } absolute left-0 top-0 h-full w-72 bg-gray-900/95 backdrop-blur-xl border-r border-gray-800 shadow-2xl transition-transform duration-300 focus:outline-none flex flex-col`}
+          style={{
+            paddingTop: "env(safe-area-inset-top)",
+            paddingBottom: "env(safe-area-inset-bottom)",
+          }}
         >
-          {/* header mobile */}
           <div className="h-16 flex items-center justify-between px-4 border-b border-gray-800">
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-gray-600 to-gray-800 border border-gray-700 flex items-center justify-center text-gray-100 font-semibold shadow">K</div>
               <span className="text-gray-100 font-bold tracking-wide">R30</span>
             </div>
-            <button onClick={() => setMobileOpen(false)} className="text-gray-400 hover:text-gray-200 p-2 rounded-lg hover:bg-gray-800" aria-label="Close sidebar">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button onClick={() => setMobileOpen(false)} className="text-gray-400 hover:text-gray-200 p-2 rounded-lg hover:bg-gray-800" aria-label="Close sidebar" title="Close sidebar">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-          {/* isi menu (pakai versi non-collapsed untuk mobile) */}
           <nav className="p-3 space-y-1">
             {menu.map((item) => (
               <NavLink

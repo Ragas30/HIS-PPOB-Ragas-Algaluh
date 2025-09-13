@@ -47,7 +47,7 @@ const Dashboard: React.FC = () => {
 
   const fetchServicesWithFallback = async (headers: HeadersInit, signal: AbortSignal) => {
     setServiceError(null);
-    const endpoints = [`${API_BASE}/service`, `${API_BASE}/services`];
+    const endpoints = [`${API_BASE}/services`];
 
     for (const url of endpoints) {
       try {
